@@ -3,6 +3,7 @@ using System.Diagnostics;
 
 namespace Memories
 {
+#pragma warning disable CS8618, CS8601
     /// <summary>
     /// ffmpegの実行機能を提供します。
     /// </summary>
@@ -18,7 +19,7 @@ namespace Memories
         /// </summary>
         public FfmpegExecutor()
         {
-            FfmpegPath = AppConfig.Get().GetSection("ffmepeg-path").Get<string>();
+            FfmpegPath = AppConfig.Get().GetSection("ffmepegPath").Get<string>();
         }
 
         /// <summary>
