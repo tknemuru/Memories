@@ -1,39 +1,42 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Memories.Helplers;
+using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
+using System.Text;
 
-namespace Memories
+namespace Memories.Executors
 {
 #pragma warning disable CS8618, CS8601
     /// <summary>
-    /// ffmpegの実行機能を提供します。
+    /// ファイル実行機能を提供します。
     /// </summary>
-    public class FfmpegExecutor
+    public class ProcessExecutor
     {
         /// <summary>
-        /// ffmpegの実行ファイルパス
+        /// 実行ファイルパス
         /// </summary>
-        private string FfmpegPath {  get; set; }
+        private string ExeFilePath { get; set; }
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public FfmpegExecutor()
+        /// <param name="exeFilePath">実行ファイルパス</param>
+        public ProcessExecutor(string exeFilePath)
         {
-            FfmpegPath = AppConfig.Get().GetSection("ffmepegPath").Get<string>();
+            ExeFilePath = exeFilePath;
         }
 
         /// <summary>
         /// ffmpegを実行します。
         /// </summary>
-        /// <param name="arguments">実行引数</param>
-        public void Execute(string arguments)
+        /// <param name="args">実行引数</param>
+        public string Execute(string args)
         {
             Process process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = FfmpegPath,
-                    Arguments = arguments,
+                    FileName = ExeFilePath,
+                    Arguments = args,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -41,12 +44,14 @@ namespace Memories
                 }
             };
 
+            var result = new StringBuilder();
             // 非同期で出力とエラーを読み取る
             process.OutputDataReceived += (sender, e) =>
             {
                 if (e.Data != null)
                 {
-                    Console.WriteLine("STDOUT: " + e.Data);
+                    result.AppendLine(e.Data);
+                    FileHelper.Log(e.Data);
                 }
             };
 
@@ -54,7 +59,7 @@ namespace Memories
             {
                 if (e.Data != null)
                 {
-                    Console.WriteLine("STDERR: " + e.Data);
+                    FileHelper.Log(e.Data);
                 }
             };
 
@@ -63,6 +68,8 @@ namespace Memories
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
             process.WaitForExit();
+
+            return result.ToString();
         }
     }
 }

@@ -33,6 +33,7 @@ namespace Memories.Helplers
         /// <returns></returns>
         public static void Log(string str)
         {
+            Console.WriteLine(str);
             WriteLine(str, DefaultFilePath);
         }
 
