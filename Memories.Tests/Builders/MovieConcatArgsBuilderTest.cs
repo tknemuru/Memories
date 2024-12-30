@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Memories.Tests
+namespace Memories.Tests.Builders
 {
     [TestClass]
     public class MovieConcatArgsBuilderTest
