@@ -1,3 +1,4 @@
 ﻿{
-  "ffmpegPath": "C:\\hoge\\ffmpeg.exe"
+  "ffmpegPath": "C:\\hoge\\ffmpeg.exe",
+  "rangeCandidate": [ 2, 11, 99999 ]
 }
