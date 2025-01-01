@@ -1,77 +1,94 @@
-﻿using System;
+﻿using Memories;
+using Memories.Builders;
+using Memories.Executors;
+using Memories.Extractors;
+using Memories.Filters;
+using Memories.Helplers;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Diagnostics;
 
 public class Program
 {
+#pragma warning disable CS8604
     static void Main(string[] args)
     {
-        int startSeconds = 10; // 切り取り開始位置（秒単位）
+        AppConfig.Init();
 
-        // 1. 動画を切り取るコマンド
-        string trimCommand = $"-i \"{inputVideo}\" -ss {startSeconds} -t 3 -c copy \"{tempVideo}\"";
+        // ローカルの動画ファイルリストを取得
+        var targetDir = AppConfig.Get().GetValue<string>("movieFileDir");
+        var builder = new MovieMetadataArgsBuilder();
+        var ffproveExecutor = new ProcessExecutor("ffprobe");
+        var extractor = new LocalMovieFileExtractor(targetDir, builder, ffproveExecutor);
+        var metadatas = extractor.Extract();
+        // TODO: 後で別クラス化
+        var minDateTime = new DateTime(2000, 1, 1);
+        metadatas = metadatas
+            .Where(m => m.Duration > 0d)
+            .Where(m => m.CreationDateTime > minDateTime);
 
-        // 2. BGMを追加するコマンド
-        string addBgmCommand = $"-i \"{tempVideo}\" -i \"{inputBgm}\" -shortest -c:v copy -c:a aac -b:a 192k \"{outputVideo}\"";
+        // 対象を絞り込む
+        var rangeCandidate = AppConfig.Get().GetValue<int[]>("rangeCandidate");
+        var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, string.Empty);
+        var fileCountFilter = new FileCountFilter(10);
+        var secondsSettingsFilter = new CutoutSecondsSettingsFilter(3);
+        metadatas = datetimeFilter.Filter(metadatas);
+        metadatas = fileCountFilter.Filter(metadatas);
+        metadatas = secondsSettingsFilter.Filter(metadatas);
 
+        var tempDir = AppConfig.Get().GetValue<string>("tempDir");
         try
         {
-            // 1. 動画を切り取る
-            Console.WriteLine("切り取り処理を開始します...");
-            RunFFmpegCommand(ffmpegPath, trimCommand);
-            Console.WriteLine("動画の切り取りが完了しました。");
+            // 動画を切り取る
+            var ffmpegExecutor = new ProcessExecutor("ffmpeg");
+            foreach (var metadata in metadatas)
+            {
+                var trimArgs = new MovieTrimArgsBuilder()
+                    .SetInputFilePath(metadata.FileName)
+                    .SetOutputFilePath($"{tempDir}\\{Guid.NewGuid()}.MOV")
+                    .SeTrimSeconds(3)
+                    .Build();
+                ffmpegExecutor.Execute(trimArgs);
+            }
 
-            // 2. BGMを追加する
-            Console.WriteLine("BGM追加処理を開始します...");
-            RunFFmpegCommand(ffmpegPath, addBgmCommand);
-            Console.WriteLine("BGM付き動画の作成が完了しました。");
+            // 切り取った動画情報を取得
+            var trimedExtractor = new LocalMovieFileExtractor(tempDir, builder, ffproveExecutor);
+            var trimedMetadatas = trimedExtractor.Extract();
+
+            // ファイルリストを作成
+            var fileList = new FileListBuilder()
+                .SetMetadatas(trimedMetadatas)
+                .Build();
+            var fileListPath = $"{tempDir}\\file-list.txt";
+            FileHelper.Write(fileList, fileListPath);
+
+            // 動画を結合する
+            var concatedFilePath = $"{tempDir}\\result.MOV";
+            var concatArgs = new MovieConcatArgsBuilder()
+                .SetInputFileListTextPath(fileListPath)
+                .SetOutputFilePath(concatedFilePath)
+                .Build();
+            ffmpegExecutor.Execute(concatArgs);
+
+            // BGMを決める
+            var audioDir = AppConfig.Get().GetValue<string>("audioDir");
+            var audioExtractor = new LocalAudioFileExtractor(audioDir);
+            var audioFilePath = audioExtractor.Extract();
+
+            // BGMをマージする
+            var outputDir = AppConfig.Get().GetValue<string>("outputDir");
+            var resultFilePath = $"{outputDir}\\result.MOV";
+            var audioArgs = new MovieAudioMergeArgsBuilder()
+                .SetInputMovieFilePath(concatedFilePath)
+                .SetInputAudioFilePath(audioFilePath)
+                .SetOutputFilePath(resultFilePath)
+                .Build();
+            ffmpegExecutor.Execute(audioArgs);
         }
         finally
         {
-            // 一時ファイルを削除する（必要に応じて）
-            if (File.Exists(tempVideo))
-            {
-                File.Delete(tempVideo);
-            }
+            // 一時フォルダ配下の全ファイルを削除
+            FileHelper.DeleteAllFolderFiles(tempDir);
         }
-    }
-
-    // FFmpegコマンドを実行する共通メソッド
-    static void RunFFmpegCommand(string ffmpegPath, string arguments)
-    {
-        Process process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = ffmpegPath,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
-        };
-
-        // 非同期で出力とエラーを読み取る
-        process.OutputDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-            {
-                Console.WriteLine("STDOUT: " + e.Data);
-            }
-        };
-
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-            {
-                Console.WriteLine("STDERR: " + e.Data);
-            }
-        };
-
-        process.Start();
-        // 非同期でデータを読み取る
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        process.WaitForExit();
     }
 }

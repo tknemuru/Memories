@@ -9,8 +9,8 @@ namespace Memories.Tests
         public void İ’èî•ñ‚ª³í‚É“Ç‚İ‚ß‚é()
         {
             AppConfig.Init("app-config-template.json");
-            var actual = AppConfig.Get().GetSection("ffmpegPath").Get<string>();
-            Assert.AreEqual(@"C:\hoge\ffmpeg.exe", actual);
+            var actual = AppConfig.Get().GetSection("movieFileDir").Get<string>();
+            Assert.AreEqual(@"C:\movie", actual);
         }
     }
 }

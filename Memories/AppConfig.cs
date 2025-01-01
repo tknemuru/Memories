@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Memories
 {
+#pragma warning disable CS8618
     /// <summary>
     /// アプリケーションの設定情報を保持します。
     /// </summary>

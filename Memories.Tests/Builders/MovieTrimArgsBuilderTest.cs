@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 namespace Memories.Tests.Builders
 {
     [TestClass]
-    public class MovieCutoutArgsBuilderTest
+    public class MovieTrimArgsBuilderTest
     {
         [TestMethod]
         public void 動画切り抜きコマンドの引数が組み立てられる()
         {
-            var actual = new MovieCutoutArgsBuilder()
+            var actual = new MovieTrimArgsBuilder()
                 .SetInputFilePath("001.MOV")
                 .SetStartSeconds(10)
-                .SetIntervalSecondss(3)
+                .SeTrimSeconds(3)
                 .SetOutputFilePath("001temp.MOV")
                 .Build();
 

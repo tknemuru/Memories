@@ -25,6 +25,11 @@ namespace Memories.Builders
             metadatas = new List<MovieFileMetadata>();
         }
 
+        /// <summary>
+        /// メタデータのリストをセットします。
+        /// </summary>
+        /// <param name="_metadatas">メタデータのリスト</param>
+        /// <returns>ビルダー</returns>
         public FileListBuilder SetMetadatas(IEnumerable<MovieFileMetadata> _metadatas)
         {
             metadatas = _metadatas;
