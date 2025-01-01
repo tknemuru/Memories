@@ -19,9 +19,9 @@ namespace Memories.Extractors
     public class LocalMovieFileExtractor : IMovieFileExtractable
     {
         /// <summary>
-        /// 抽出対象のディレクトリ
+        /// 抽出対象のファイルリスト
         /// </summary>
-        private string TargetDir { get; set; }
+        private IEnumerable<string> Files { get; set; }
 
         /// <summary>
         /// メタ情報抽出引数の構築機能
@@ -36,12 +36,12 @@ namespace Memories.Extractors
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="targetDir">抽出対象のディレクトリ</param>
+        /// <param name="files">抽出対象のファイルリスト</param>
         /// <param name="argsBuilder">メタ情報抽出引数の構築機能</param>
         /// <param name="metaExtractor">メタ情報抽出機能</param>
-        public LocalMovieFileExtractor(string targetDir, MovieMetadataArgsBuilder argsBuilder, ProcessExecutor metaExtractor)
+        public LocalMovieFileExtractor(IEnumerable<string> files, MovieMetadataArgsBuilder argsBuilder, ProcessExecutor metaExtractor)
         {
-            TargetDir = targetDir;
+            Files = files;
             ArgsBuilder = argsBuilder;
             MeataExtractor = metaExtractor;
         }
@@ -54,8 +54,7 @@ namespace Memories.Extractors
         /// <returns></returns>
         public IEnumerable<MovieFileMetadata> Extract()
         {
-            string[] files = Directory.GetFiles(TargetDir, "*.MOV", SearchOption.AllDirectories);
-            var metas = files.Select(f =>
+            var metas = Files.Select(f =>
             {
                 var args = ArgsBuilder
                        .SetInputFilePath(f)

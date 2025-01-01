@@ -18,7 +18,8 @@ namespace Memories.Tests.Extractors
         {
             var builder = new MovieMetadataArgsBuilder();
             var procExecutor = new ProcessExecutor("ffprobe");
-            var extractor = new LocalMovieFileExtractor(@"..\..\..\Resources\LocalMovieFileExtractor", builder, procExecutor);
+            string[] files = Directory.GetFiles(@"..\..\..\Resources\LocalMovieFileExtractor", "*.MOV", SearchOption.AllDirectories);
+            var extractor = new LocalMovieFileExtractor(files, builder, procExecutor);
             var actual = extractor.Extract().ToList();
             var expected = new List<MovieFileMetadata>
             {
