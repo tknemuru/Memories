@@ -26,5 +26,15 @@ namespace Memories.Models
         /// 作成日時
         /// </summary>
         public DateTime CreationDateTime { get; set; }
+
+        /// <summary>
+        /// 開始時間（秒）
+        /// </summary>
+        public int StartSeconds { get; set; }
+
+        /// <summary>
+        /// 切り抜き時間（秒）
+        /// </summary>
+        public int CutoutSeconds { get; set; }
     }
 }
