@@ -50,7 +50,7 @@ namespace Memories.Builders
         /// <returns></returns>
         public string Build()
         {
-            return $"-f concat -safe 0 -i \"{InputFileListTextPath}\" -c copy \"{OutputFilePath}\"";
+            return $"-f concat -safe 0 -i \"{InputFileListTextPath}\" -c:v libx264 -c:a aac \"{OutputFilePath}\"";
         }
     }
 }
