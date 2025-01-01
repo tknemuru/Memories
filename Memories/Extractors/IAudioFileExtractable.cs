@@ -10,7 +10,7 @@ namespace Memories.Extractors
     /// <summary>
     /// 音声ファイルパスの抽出機能を提供します。
     /// </summary>
-    public interface IAudioFileExtractor
+    public interface IAudioFileExtractable
     {
         /// <summary>
         /// 音声ファイルパスを抽出します。
