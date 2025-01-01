@@ -18,6 +18,10 @@ namespace Memories.Filters
         /// </summary>
         private int SelectCount { get; set; }
 
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="selectCount">選択するファイル数</param>
         public FileCountFilter(int selectCount)
         {
             SelectCount = selectCount;
@@ -37,14 +41,12 @@ namespace Memories.Filters
                 return metadatas;
             }
 
-            var result = new List<MovieFileMetadata>();
-            var metadatasList = metadatas.ToList();
             var random = new Random();
-            while(result.Count < SelectCount)
-            {
-                var i = random.Next(count);
-                result.Add(metadatasList[i]);
-            }
+            var result = metadatas
+                .Select(m => new { Order = random.Next(count), Metadata = m })
+                .OrderBy(m => m.Order)
+                .Take(SelectCount)
+                .Select(m => m.Metadata);
             return result;
         }
     }

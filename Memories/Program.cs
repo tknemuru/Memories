@@ -60,26 +60,51 @@ public class Program
         }
 
         // TODO: 後で別クラス化
-        var minDateTime = new DateTime(2000, 1, 1);
+        var filterMinDateTime = new DateTime(2000, 1, 1);
         metadatas = metadatas
             .Where(m => m.Duration > 0d)
-            .Where(m => m.CreationDateTime > minDateTime);
+            .Where(m => m.CreationDateTime > filterMinDateTime)
+            .ToList();
+
+        // 除外リストを読み込む
+        var exclusionListFilePath = AppConfig.Get().GetValue<string>("exclusionListFilePath");
+        IEnumerable<string> exclusions = new List<string>();
+        if (File.Exists(exclusionListFilePath))
+        {
+            exclusions = FileHelper.ReadTextLines(exclusionListFilePath);
+        }
 
         // 対象を絞り込む
         var rangeCandidate = AppConfig.Get().GetSection("rangeCandidate").Get<int[]>();
         var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, string.Empty);
         var fileCountFilter = new FileCountFilter(10);
         var secondsSettingsFilter = new TrimSecondsSettingsFilter(6);
-        metadatas = datetimeFilter.Filter(metadatas);
-        metadatas = fileCountFilter.Filter(metadatas);
-        metadatas = secondsSettingsFilter.Filter(metadatas);
+        var exclusionFilter = new ExclusionFilter(exclusions);
+        metadatas = datetimeFilter.Filter(metadatas).ToList();
+        metadatas = exclusionFilter.Filter(metadatas).ToList();
+        metadatas = fileCountFilter.Filter(metadatas).ToList();
+        metadatas = secondsSettingsFilter
+            .Filter(metadatas)
+            .OrderBy(m => m.CreationDateTime)
+            .ToList();
+
+        // 作成期間を把握しておく
+        var minDatetime = metadatas
+                .Select(m => m.CreationDateTime)
+                .Min();
+        var maxDatetime = metadatas
+            .Select(m => m.CreationDateTime)
+            .Max();
+        FileHelper.Log($"作成日時の最小値: {minDatetime}");
+        FileHelper.Log($"作成日時の最大値: {maxDatetime}");
+        var minMaxTimestamp = $"{minDatetime.ToString("yyyyMM")}-{maxDatetime.ToString("yyyyMM")}";
 
         // 対象をファイルに出力しておく
         var outputDir = AppConfig.Get().GetValue<string>("outputDir");
         var fileList = new FileListBuilder()
                 .SetMetadatas(metadatas)
                 .Build();
-        var fileListPath = $"{outputDir}\\file-list.txt";
+        var fileListPath = $"{outputDir}\\{minMaxTimestamp}-file-list.txt";
         FileHelper.Write(fileList, fileListPath, false);
 
         var tempDir = AppConfig.Get().GetValue<string>("tempDir");
@@ -89,9 +114,11 @@ public class Program
             var ffmpegExecutor = new ProcessExecutor("ffmpeg");
             foreach (var metadata in metadatas)
             {
+                var name = Path.GetFileNameWithoutExtension(metadata.FileName);
+                var timestamp = metadata.CreationDateTime.ToString("yyyyMMddHHmmssfff");
                 var trimArgs = new MovieTrimArgsBuilder()
                     .SetInputFilePath(metadata.FileName)
-                    .SetOutputFilePath($"{tempDir}\\{Guid.NewGuid()}.MOV")
+                    .SetOutputFilePath($"{tempDir}\\{timestamp}-{name}.MOV")
                     .SeTrimSeconds(6)
                     .Build();
                 ffmpegExecutor.Execute(trimArgs);
@@ -100,7 +127,9 @@ public class Program
             // 切り取った動画情報を取得
             string[] trimedFiles = Directory.GetFiles(tempDir, "*.MOV", SearchOption.AllDirectories);
             var trimedExtractor = new LocalMovieFileExtractor(trimedFiles, builder, ffproveExecutor);
-            var trimedMetadatas = trimedExtractor.Extract();
+            var trimedMetadatas = trimedExtractor.Extract()
+                .OrderBy(m => m.FileName)
+                .ToList();
 
             // ファイルリストを作成
             fileList = new FileListBuilder()
@@ -123,7 +152,7 @@ public class Program
             var audioFilePath = audioExtractor.Extract();
 
             // BGMをマージする
-            var resultFilePath = $"{outputDir}\\result.MOV";
+            var resultFilePath = $"{outputDir}\\{minMaxTimestamp}.MOV";
             var audioArgs = new MovieAudioMergeArgsBuilder()
                 .SetInputMovieFilePath(concatedFilePath)
                 .SetInputAudioFilePath(audioFilePath)
