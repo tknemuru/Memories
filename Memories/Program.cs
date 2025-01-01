@@ -1,12 +1,16 @@
-﻿using Memories;
+﻿using CsvHelper;
+using Memories;
 using Memories.Builders;
 using Memories.Executors;
 using Memories.Extractors;
 using Memories.Filters;
 using Memories.Helplers;
+using Memories.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
+using System.Globalization;
+using YamlDotNet.Core;
 
 public class Program
 {
@@ -15,12 +19,46 @@ public class Program
     {
         AppConfig.Init();
 
-        // ローカルの動画ファイルリストを取得
+        // 取得済のメタデータリストを読み込む
+        IEnumerable<MovieFileMetadata> hasReadMetadatas = new List<MovieFileMetadata>();
+        var hasReadMetadataFilePath = AppConfig.Get().GetValue<string>("metaDataCsvFilePath");
+        if (File.Exists(hasReadMetadataFilePath))
+        {
+            using (var reader = new StreamReader(hasReadMetadataFilePath))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                hasReadMetadatas = csv.GetRecords<MovieFileMetadata>().ToList();
+            }
+        }
+
+        // 取得済のメタデータは取得を省く
         var targetDir = AppConfig.Get().GetValue<string>("movieFileDir");
+        string[] files = Directory.GetFiles(targetDir, "*.MOV", SearchOption.AllDirectories);
+        var hasReadFileDic = hasReadMetadatas
+            .ToDictionary(m => m.FileName, m => m);
+        var targetFiles = files
+            .Where(f => !hasReadFileDic.ContainsKey(f));
+
+        // ローカルの動画ファイルリストを取得
         var builder = new MovieMetadataArgsBuilder();
         var ffproveExecutor = new ProcessExecutor("ffprobe");
-        var extractor = new LocalMovieFileExtractor(targetDir, builder, ffproveExecutor);
+        var extractor = new LocalMovieFileExtractor(targetFiles, builder, ffproveExecutor);
         var metadatas = extractor.Extract();
+
+        // 取得済メタデータリストとマージ
+        metadatas = metadatas.UnionBy(hasReadMetadatas, m => m.FileName);
+
+        // 取得済のメタデータリストとして書き込む
+        if (File.Exists(hasReadMetadataFilePath))
+        {
+            File.Delete(hasReadMetadataFilePath);
+        }
+        using (var writer = new StreamWriter(hasReadMetadataFilePath))
+        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+        {
+            csv.WriteRecords(metadatas);
+        }
+
         // TODO: 後で別クラス化
         var minDateTime = new DateTime(2000, 1, 1);
         metadatas = metadatas
@@ -28,7 +66,7 @@ public class Program
             .Where(m => m.CreationDateTime > minDateTime);
 
         // 対象を絞り込む
-        var rangeCandidate = AppConfig.Get().GetValue<int[]>("rangeCandidate");
+        var rangeCandidate = AppConfig.Get().GetSection("rangeCandidate").Get<int[]>();
         var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, string.Empty);
         var fileCountFilter = new FileCountFilter(10);
         var secondsSettingsFilter = new TrimSecondsSettingsFilter(3);
@@ -52,7 +90,8 @@ public class Program
             }
 
             // 切り取った動画情報を取得
-            var trimedExtractor = new LocalMovieFileExtractor(tempDir, builder, ffproveExecutor);
+            string[] trimedFiles = Directory.GetFiles(tempDir, "*.MOV", SearchOption.AllDirectories);
+            var trimedExtractor = new LocalMovieFileExtractor(trimedFiles, builder, ffproveExecutor);
             var trimedMetadatas = trimedExtractor.Extract();
 
             // ファイルリストを作成
@@ -60,7 +99,7 @@ public class Program
                 .SetMetadatas(trimedMetadatas)
                 .Build();
             var fileListPath = $"{tempDir}\\file-list.txt";
-            FileHelper.Write(fileList, fileListPath);
+            FileHelper.Write(fileList, fileListPath, false);
 
             // 動画を結合する
             var concatedFilePath = $"{tempDir}\\result.MOV";
@@ -84,6 +123,10 @@ public class Program
                 .SetOutputFilePath(resultFilePath)
                 .Build();
             ffmpegExecutor.Execute(audioArgs);
+        }
+        catch(Exception ex)
+        {
+            FileHelper.Log(ex.ToString());
         }
         finally
         {

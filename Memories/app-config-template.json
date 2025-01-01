@@ -3,5 +3,6 @@
   "tempDir": "C:\\temp",
   "outputDir": "C:\\output",
   "audioDir": "C:\\audio",
+  "metaDataCsvFilePath": "C:\\metadata.csv",
   "rangeCandidate": [ 2, 11, 99999 ]
 }

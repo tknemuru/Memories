@@ -45,29 +45,39 @@ namespace Memories.Executors
             };
 
             var result = new StringBuilder();
-            // 非同期で出力とエラーを読み取る
-            process.OutputDataReceived += (sender, e) =>
+            try
             {
-                if (e.Data != null)
+                // 非同期で出力とエラーを読み取る
+                process.OutputDataReceived += (sender, e) =>
                 {
-                    result.AppendLine(e.Data);
-                    FileHelper.Log(e.Data);
-                }
-            };
+                    if (e.Data != null)
+                    {
+                        result.AppendLine(e.Data);
+                        FileHelper.Log(e.Data);
+                    }
+                };
 
-            process.ErrorDataReceived += (sender, e) =>
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (e.Data != null)
+                    {
+                        FileHelper.Log(e.Data);
+                    }
+                };
+
+                process.Start();
+                // 非同期でデータを読み取る
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+            }
+            finally
             {
-                if (e.Data != null)
-                {
-                    FileHelper.Log(e.Data);
-                }
-            };
-
-            process.Start();
-            // 非同期でデータを読み取る
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
+                // 完了後の処理
+                process.CancelOutputRead();
+                process.CancelErrorRead();
+                process.Dispose();
+            }
 
             return result.ToString();
         }
