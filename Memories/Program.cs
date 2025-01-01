@@ -69,10 +69,18 @@ public class Program
         var rangeCandidate = AppConfig.Get().GetSection("rangeCandidate").Get<int[]>();
         var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, string.Empty);
         var fileCountFilter = new FileCountFilter(10);
-        var secondsSettingsFilter = new TrimSecondsSettingsFilter(3);
+        var secondsSettingsFilter = new TrimSecondsSettingsFilter(6);
         metadatas = datetimeFilter.Filter(metadatas);
         metadatas = fileCountFilter.Filter(metadatas);
         metadatas = secondsSettingsFilter.Filter(metadatas);
+
+        // 対象をファイルに出力しておく
+        var outputDir = AppConfig.Get().GetValue<string>("outputDir");
+        var fileList = new FileListBuilder()
+                .SetMetadatas(metadatas)
+                .Build();
+        var fileListPath = $"{outputDir}\\file-list.txt";
+        FileHelper.Write(fileList, fileListPath, false);
 
         var tempDir = AppConfig.Get().GetValue<string>("tempDir");
         try
@@ -84,7 +92,7 @@ public class Program
                 var trimArgs = new MovieTrimArgsBuilder()
                     .SetInputFilePath(metadata.FileName)
                     .SetOutputFilePath($"{tempDir}\\{Guid.NewGuid()}.MOV")
-                    .SeTrimSeconds(3)
+                    .SeTrimSeconds(6)
                     .Build();
                 ffmpegExecutor.Execute(trimArgs);
             }
@@ -95,10 +103,10 @@ public class Program
             var trimedMetadatas = trimedExtractor.Extract();
 
             // ファイルリストを作成
-            var fileList = new FileListBuilder()
+            fileList = new FileListBuilder()
                 .SetMetadatas(trimedMetadatas)
                 .Build();
-            var fileListPath = $"{tempDir}\\file-list.txt";
+            fileListPath = $"{tempDir}\\file-list.txt";
             FileHelper.Write(fileList, fileListPath, false);
 
             // 動画を結合する
@@ -115,7 +123,6 @@ public class Program
             var audioFilePath = audioExtractor.Extract();
 
             // BGMをマージする
-            var outputDir = AppConfig.Get().GetValue<string>("outputDir");
             var resultFilePath = $"{outputDir}\\result.MOV";
             var audioArgs = new MovieAudioMergeArgsBuilder()
                 .SetInputMovieFilePath(concatedFilePath)
@@ -131,7 +138,7 @@ public class Program
         finally
         {
             // 一時フォルダ配下の全ファイルを削除
-            FileHelper.DeleteAllFolderFiles(tempDir);
+            //FileHelper.DeleteAllFolderFiles(tempDir);
         }
     }
 }
