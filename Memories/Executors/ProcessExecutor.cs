@@ -31,6 +31,7 @@ namespace Memories.Executors
         /// <param name="args">実行引数</param>
         public string Execute(string args)
         {
+            FileHelper.Log($"実行コマンド: {ExeFilePath} {args}");
             Process process = new Process
             {
                 StartInfo = new ProcessStartInfo

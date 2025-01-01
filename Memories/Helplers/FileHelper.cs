@@ -23,7 +23,7 @@ namespace Memories.Helplers
         /// </summary>
         static FileHelper()
         {
-            DefaultFilePath = string.Format(@"./log/{0}.txt", DateTime.Now.ToString("yyyyMMddhhmmss"));
+            DefaultFilePath = string.Format(@"./log/{0}.txt", DateTime.Now.ToString("yyyyMMddHHmmss"));
         }
 
         /// <summary>

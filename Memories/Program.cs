@@ -42,8 +42,8 @@ public class Program
         // ローカルの動画ファイルリストを取得
         var builder = new MovieMetadataArgsBuilder();
         var ffproveExecutor = new ProcessExecutor("ffprobe");
-        var extractor = new LocalMovieFileExtractor(targetFiles, builder, ffproveExecutor);
-        var metadatas = extractor.Extract();
+        var metaExtractor = new LocalMovieFileExtractor(targetFiles, builder, ffproveExecutor);
+        var metadatas = metaExtractor.Extract();
 
         // 取得済メタデータリストとマージ
         metadatas = metadatas.UnionBy(hasReadMetadatas, m => m.FileName);
@@ -60,7 +60,7 @@ public class Program
         }
 
         // TODO: 後で別クラス化
-        var filterMinDateTime = new DateTime(2000, 1, 1);
+        var filterMinDateTime = new DateTime(2021, 11, 5);
         metadatas = metadatas
             .Where(m => m.Duration > 0d)
             .Where(m => m.CreationDateTime > filterMinDateTime)
@@ -97,7 +97,7 @@ public class Program
             .Max();
         FileHelper.Log($"作成日時の最小値: {minDatetime}");
         FileHelper.Log($"作成日時の最大値: {maxDatetime}");
-        var minMaxTimestamp = $"{minDatetime.ToString("yyyyMM")}-{maxDatetime.ToString("yyyyMM")}";
+        var minMaxTimestamp = $"{minDatetime.ToString("yyyyMM")}-{maxDatetime.ToString("yyyyMM")}-{DateTime.Now.ToString("yyyyMMddHHmm")}";
 
         // 対象をファイルに出力しておく
         var outputDir = AppConfig.Get().GetValue<string>("outputDir");
@@ -152,13 +152,24 @@ public class Program
             var audioFilePath = audioExtractor.Extract();
 
             // BGMをマージする
-            var resultFilePath = $"{outputDir}\\{minMaxTimestamp}.MOV";
+            var audioMergedFilePath = $"{tempDir}\\{minMaxTimestamp}-without-fadeout.MOV";
             var audioArgs = new MovieAudioMergeArgsBuilder()
                 .SetInputMovieFilePath(concatedFilePath)
                 .SetInputAudioFilePath(audioFilePath)
-                .SetOutputFilePath(resultFilePath)
+                .SetOutputFilePath(audioMergedFilePath)
                 .Build();
             ffmpegExecutor.Execute(audioArgs);
+
+            // フェードアウト設定をする
+            metaExtractor = new LocalMovieFileExtractor(new string[] { audioMergedFilePath }, builder, ffproveExecutor);
+            var meta = metaExtractor.Extract().First();
+            var resultFilePath = $"{outputDir}\\{minMaxTimestamp}.MOV";
+            var fadeoutArgs = new MovieFadeoutArgsBuilder()
+                .SetInputFilePath(audioMergedFilePath)
+                .SetOutputFilePath(resultFilePath)
+                .SetDuration((int)meta.Duration)
+                .Build();
+            ffmpegExecutor.Execute(fadeoutArgs);
         }
         catch(Exception ex)
         {
