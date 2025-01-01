@@ -30,7 +30,7 @@ namespace Memories.Builders
         /// <summary>
         /// 切り抜き時間（秒）
         /// </summary>
-        public int IntervalSeconds { get; private set; }
+        public int CutoutSeconds { get; private set; }
 
         /// <summary>
         /// 入力元のファイルパスを設定します。
@@ -68,11 +68,11 @@ namespace Memories.Builders
         /// <summary>
         /// 切り抜き時間（秒）を設定します。
         /// </summary>
-        /// <param name="intervalSeconds">切り抜き時間（秒）</param>
+        /// <param name="cutoutSeconds">切り抜き時間（秒）</param>
         /// <returns>ビルダー</returns>
-        public MovieCutoutArgsBuilder SetIntervalSecondss(int intervalSeconds)
+        public MovieCutoutArgsBuilder SetIntervalSecondss(int cutoutSeconds)
         {
-            IntervalSeconds = intervalSeconds;
+            CutoutSeconds = cutoutSeconds;
             return this;
         }
 
@@ -82,7 +82,7 @@ namespace Memories.Builders
         /// <returns></returns>
         public string Build()
         {
-            return $"-i \"{InputFilePath}\" -ss {StartSeconds} -t {IntervalSeconds} -c copy \"{OutputFilePath}\"";
+            return $"-i \"{InputFilePath}\" -ss {StartSeconds} -t {CutoutSeconds} -c copy \"{OutputFilePath}\"";
         }
     }
 }
