@@ -94,7 +94,8 @@ namespace Memories.Filters
 
             // 対象を絞り込む
             var result = metadatas
-                .Where(m => startDateTime <= m.CreationDateTime && m.CreationDateTime <= endDateTime);
+                .Where(m => startDateTime <= m.CreationDateTime && m.CreationDateTime <= endDateTime)
+                .OrderBy(m => m.CreationDateTime);
             return result;
         }
     }

@@ -15,7 +15,7 @@ namespace Memories.Extractors
         /// <summary>
         /// 動画ファイル情報を抽出します。
         /// </summary>
-        /// <returns></returns>
+        /// <returns>動画ファイル情報のリスト</returns>
         IEnumerable<MovieFileMetadata> Extract();
     }
 }
