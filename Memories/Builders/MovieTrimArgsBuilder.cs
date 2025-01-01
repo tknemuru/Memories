@@ -82,7 +82,7 @@ namespace Memories.Builders
         /// <returns></returns>
         public string Build()
         {
-            return $"-i \"{InputFilePath}\" -ss {StartSeconds} -t {TrimSeconds} -vf \"scale=iw*min(1920/iw\\,1080/ih):ih*min(1920/iw\\,1080/ih),pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2\" -c:v libx264 -c:a aac \"{OutputFilePath}\"";
+            return $"-i \"{InputFilePath}\" -ss {StartSeconds} -t {TrimSeconds} -vf \"scale=iw*min(1920/iw\\,1080/ih):ih*min(1920/iw\\,1080/ih),pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2\" -r 30 -c:v libx264 -c:a aac \"{OutputFilePath}\"";
         }
     }
 }
