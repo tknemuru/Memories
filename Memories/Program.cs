@@ -31,7 +31,7 @@ public class Program
         var rangeCandidate = AppConfig.Get().GetValue<int[]>("rangeCandidate");
         var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, string.Empty);
         var fileCountFilter = new FileCountFilter(10);
-        var secondsSettingsFilter = new CutoutSecondsSettingsFilter(3);
+        var secondsSettingsFilter = new TrimSecondsSettingsFilter(3);
         metadatas = datetimeFilter.Filter(metadatas);
         metadatas = fileCountFilter.Filter(metadatas);
         metadatas = secondsSettingsFilter.Filter(metadatas);

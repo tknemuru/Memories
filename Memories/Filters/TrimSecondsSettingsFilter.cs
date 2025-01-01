@@ -39,7 +39,7 @@ namespace Memories.Filters
                 {
                     var trim = Math.Min((int)m.Duration, TrimSeconds);
                     var start = random.Next((int)m.Duration - trim);
-                    m.CutoutSeconds = trim;
+                    m.TrimSeconds = trim;
                     m.StartSeconds = start;
                     return m;
                 });
