@@ -66,7 +66,7 @@ namespace Memories.Builders
         /// <returns></returns>
         public string Build()
         {
-            return $"-i \"{InputMovieFilePath}\" -i \"{InputAudioFilePath}\" -filter_complex \"[0:a]volume=1.0[a1];[1:a]volume=0.4[a2];[a1][a2]amix=inputs=2:duration=shortest\" -c:v copy -c:a aac -b:a 192k \"{OutputFilePath}\"";
+            return $"-i \"{InputMovieFilePath}\" -i \"{InputAudioFilePath}\" -filter_complex \"[0:a]volume=1.0[a1];[1:a]volume=0.2[a2];[a1][a2]amix=inputs=2:duration=shortest\" -c:v copy -c:a aac -b:a 192k \"{OutputFilePath}\"";
         }
     }
 }

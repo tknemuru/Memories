@@ -139,7 +139,7 @@ public class Program
             FileHelper.Write(fileList, fileListPath, false);
 
             // 動画を結合する
-            var concatedFilePath = $"{tempDir}\\result.MOV";
+            var concatedFilePath = $"{tempDir}\\{minMaxTimestamp}-without-audio.MOV";
             var concatArgs = new MovieConcatArgsBuilder()
                 .SetInputFileListTextPath(fileListPath)
                 .SetOutputFilePath(concatedFilePath)
