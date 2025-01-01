@@ -20,7 +20,7 @@ namespace Memories.Tests.Builders
                 .SetOutputFilePath("001temp.MOV")
                 .Build();
 
-            Assert.AreEqual("-i \"001.MOV\" -ss 10 -t 3 -c copy \"001temp.MOV\"", actual);
+            Assert.AreEqual("-i \"001.MOV\" -ss 10 -t 3 -vf \"scale=iw*min(1920/iw\\,1080/ih):ih*min(1920/iw\\,1080/ih),pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2\" -c:v libx264 -c:a aac \"001temp.MOV\"", actual);
         }
     }
 }

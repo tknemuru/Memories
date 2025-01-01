@@ -18,7 +18,7 @@ namespace Memories.Tests.Builders
                 .SetOutputFilePath("temp.MOV")
                 .Build();
 
-            Assert.AreEqual("-f concat -safe 0 -i \"file_list.txt\" -c copy \"temp.MOV\"", actual);
+            Assert.AreEqual("-f concat -safe 0 -i \"file_list.txt\" -c:v libx264 -c:a aac \"temp.MOV\"", actual);
         }
     }
 }
