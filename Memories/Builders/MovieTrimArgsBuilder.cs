@@ -10,7 +10,7 @@ namespace Memories.Builders
     /// <summary>
     /// 動画切り抜き引数の構築機能を提供します。
     /// </summary>
-    public class MovieCutoutArgsBuilder : IBuildable
+    public class MovieTrimArgsBuilder : IBuildable
     {
         /// <summary>
         /// 入力元のファイルパス
@@ -30,14 +30,14 @@ namespace Memories.Builders
         /// <summary>
         /// 切り抜き時間（秒）
         /// </summary>
-        public int CutoutSeconds { get; private set; }
+        public int TrimSeconds { get; private set; }
 
         /// <summary>
         /// 入力元のファイルパスを設定します。
         /// </summary>
         /// <param name="inputFilePath">入力元のファイルパス</param>
         /// <returns>ビルダー</returns>
-        public MovieCutoutArgsBuilder SetInputFilePath(string inputFilePath)
+        public MovieTrimArgsBuilder SetInputFilePath(string inputFilePath)
         {
             InputFilePath = inputFilePath;
             return this;
@@ -48,7 +48,7 @@ namespace Memories.Builders
         /// </summary>
         /// <param name="outputFilePath">出力先のファイルパス</param>
         /// <returns>ビルダー</returns>
-        public MovieCutoutArgsBuilder SetOutputFilePath(string outputFilePath)
+        public MovieTrimArgsBuilder SetOutputFilePath(string outputFilePath)
         {
             OutputFilePath = outputFilePath;
             return this;
@@ -59,7 +59,7 @@ namespace Memories.Builders
         /// </summary>
         /// <param name="startSeconds">開始時間（秒）</param>
         /// <returns>ビルダー</returns>
-        public MovieCutoutArgsBuilder SetStartSeconds(int startSeconds)
+        public MovieTrimArgsBuilder SetStartSeconds(int startSeconds)
         {
             StartSeconds = startSeconds;
             return this;
@@ -68,11 +68,11 @@ namespace Memories.Builders
         /// <summary>
         /// 切り抜き時間（秒）を設定します。
         /// </summary>
-        /// <param name="cutoutSeconds">切り抜き時間（秒）</param>
+        /// <param name="trimSeconds">切り抜き時間（秒）</param>
         /// <returns>ビルダー</returns>
-        public MovieCutoutArgsBuilder SetIntervalSecondss(int cutoutSeconds)
+        public MovieTrimArgsBuilder SeTrimSeconds(int trimSeconds)
         {
-            CutoutSeconds = cutoutSeconds;
+            TrimSeconds = trimSeconds;
             return this;
         }
 
@@ -82,7 +82,7 @@ namespace Memories.Builders
         /// <returns></returns>
         public string Build()
         {
-            return $"-i \"{InputFilePath}\" -ss {StartSeconds} -t {CutoutSeconds} -c copy \"{OutputFilePath}\"";
+            return $"-i \"{InputFilePath}\" -ss {StartSeconds} -t {TrimSeconds} -c copy \"{OutputFilePath}\"";
         }
     }
 }

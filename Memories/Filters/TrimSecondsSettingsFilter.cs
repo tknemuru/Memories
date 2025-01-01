@@ -10,20 +10,20 @@ namespace Memories.Filters
     /// <summary>
     /// 切り抜き時間（秒）をセットする機能を提供します。
     /// </summary>
-    public class CutoutSecondsSettingsFilter : IMovieFileFiltable
+    public class TrimSecondsSettingsFilter : IMovieFileFiltable
     {
         /// <summary>
         /// 切り抜き時間（秒）
         /// </summary>
-        private int CutoutSeconds {  get; set; }
+        private int TrimSeconds {  get; set; }
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="cutoutSeconds">切り抜き時間（秒）</param>
-        public CutoutSecondsSettingsFilter(int cutoutSeconds)
+        /// <param name="trimSeconds">切り抜き時間（秒）</param>
+        public TrimSecondsSettingsFilter(int trimSeconds)
         {
-            CutoutSeconds = cutoutSeconds;
+            TrimSeconds = trimSeconds;
         }
 
         /// <summary>
@@ -37,9 +37,9 @@ namespace Memories.Filters
             var result = metadatas
                 .Select(m =>
                 {
-                    var cutout = Math.Min((int)m.Duration, CutoutSeconds);
-                    var start = random.Next((int)m.Duration - cutout);
-                    m.CutoutSeconds = cutout;
+                    var trim = Math.Min((int)m.Duration, TrimSeconds);
+                    var start = random.Next((int)m.Duration - trim);
+                    m.CutoutSeconds = trim;
                     m.StartSeconds = start;
                     return m;
                 });

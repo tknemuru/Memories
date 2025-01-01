@@ -35,6 +35,6 @@ namespace Memories.Models
         /// <summary>
         /// 切り抜き時間（秒）
         /// </summary>
-        public int CutoutSeconds { get; set; }
+        public int TrimSeconds { get; set; }
     }
 }

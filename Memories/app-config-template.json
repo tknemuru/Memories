@@ -1,4 +1,7 @@
 ﻿{
-  "ffmpegPath": "C:\\hoge\\ffmpeg.exe",
+  "movieFileDir": "C:\\movie",
+  "tempDir": "C:\\temp",
+  "outputDir": "C:\\output",
+  "audioDir": "C:\\audio",
   "rangeCandidate": [ 2, 11, 99999 ]
 }

@@ -169,5 +169,27 @@ namespace Memories.Helplers
 
             return retPath.Substring(0, (retPath.Length - 1));
         }
+
+        /// <summary>
+        /// 指定したフォルダ内の全ファイルを再帰的に削除します。
+        /// </summary>
+        /// <param name="folderPath">削除対象のフォルダパス</param>
+        public static void DeleteAllFolderFiles(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+            {
+                return;
+            }
+
+            foreach (string file in Directory.GetFiles(folderPath))
+            {
+                File.Delete(file);
+            }
+
+            foreach (string subFolder in Directory.GetDirectories(folderPath))
+            {
+                Directory.Delete(subFolder, true);
+            }
+        }
     }
 }
