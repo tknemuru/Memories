@@ -3,6 +3,7 @@
   "tempDir": "C:\\temp",
   "outputDir": "C:\\output",
   "audioDir": "C:\\audio",
+  "historyDir": "C:\\history",
   "metaDataCsvFilePath": "C:\\metadata.csv",
   "exclusionListFilePath": "C:\\exclusion-list.txt",
   "rangeCandidate": [ 2, 11, 99999 ]

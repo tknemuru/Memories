@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Text;
 
 namespace Memories.Helplers
@@ -174,7 +175,7 @@ namespace Memories.Helplers
         /// 指定したフォルダ内の全ファイルを再帰的に削除します。
         /// </summary>
         /// <param name="folderPath">削除対象のフォルダパス</param>
-        public static void DeleteAllFolderFiles(string folderPath)
+        public static void DeleteAllFiles(string folderPath)
         {
             if (!Directory.Exists(folderPath))
             {
@@ -189,6 +190,35 @@ namespace Memories.Helplers
             foreach (string subFolder in Directory.GetDirectories(folderPath))
             {
                 Directory.Delete(subFolder, true);
+            }
+        }
+
+        /// <summary>
+        /// 指定したフォルダ内の全ファイルを再帰的に移動します。
+        /// </summary>
+        /// <param name="sourceFolderPath">移動元のフォルダパス</param>
+        /// <param name="destFolderPath">移動先のフォルダパス</param>
+        public static void MoveAllFiles(string sourceFolderPath, string destFolderPath)
+        {
+            // 移動先のフォルダが存在しない場合は作成
+            if (!Directory.Exists(destFolderPath))
+            {
+                Directory.CreateDirectory(destFolderPath);
+            }
+
+            // 指定したフォルダ内のすべてのファイルを取得
+            string[] files = Directory.GetFiles(sourceFolderPath, "*", SearchOption.AllDirectories);
+
+            foreach (string file in files)
+            {
+                // ファイル名を取得
+                string fileName = Path.GetFileName(file);
+
+                // 移動先のフルパスを作成
+                string destFilePath = Path.Combine(destFolderPath, fileName);
+
+                // ファイルを移動
+                File.Move(file, destFilePath);
             }
         }
     }

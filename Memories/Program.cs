@@ -174,11 +174,13 @@ public class Program
         catch(Exception ex)
         {
             FileHelper.Log(ex.ToString());
+            throw;
         }
         finally
         {
-            // 一時フォルダ配下の全ファイルを削除
-            //FileHelper.DeleteAllFolderFiles(tempDir);
+            // 一時フォルダ配下の全ファイルを履歴フォルダに移動
+            var historyDir = AppConfig.Get().GetValue<string>("historyDir");
+            FileHelper.MoveAllFiles(tempDir, $"{historyDir}\\{minMaxTimestamp}");
         }
     }
 }
