@@ -26,14 +26,14 @@ namespace Memories.Tests.Extractors
                 new MovieFileMetadata()
                 {
                     FileName = @"..\..\..\Resources\LocalMovieFileExtractor\001.MOV",
-                    Duration = 21.796667,
-                    CreationDateTime = DateTime.Parse("2019-12-14T19:24:30+0900"),
+                    Duration = 0.433333,
+                    CreationDateTime = DateTime.Parse("2024-09-17T20:54:13+0900"),
                 },
                 new MovieFileMetadata()
                 {
                     FileName = @"..\..\..\Resources\LocalMovieFileExtractor\002.MOV",
-                    Duration = 14.745,
-                    CreationDateTime = DateTime.Parse("2018-12-08T18:06:46+0900"),
+                    Duration = 0.166667,
+                    CreationDateTime = DateTime.Parse("2024-09-17T20:55:32+0900"),
                 },
             };
             Assert.AreEqual(expected.Count, actual.Count);

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CsvHelper.Configuration.Attributes;
+using Memories.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,5 +38,11 @@ namespace Memories.Models
         /// 切り抜き時間（秒）
         /// </summary>
         public int TrimSeconds { get; set; }
+
+        /// <summary>
+        /// 送信済メールアドレスのリスト
+        /// </summary>
+        [TypeConverter(typeof(StringEnumerableConverter))]
+        public List<string> HasSentAddresses {  get; set; } = new List<string>();
     }
 }
