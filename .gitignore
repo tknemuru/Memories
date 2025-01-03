@@ -5,7 +5,7 @@
 
 #Custom
 app-config.json
-Resources/
+/Resources/
 
 # User-specific files
 *.rsuser

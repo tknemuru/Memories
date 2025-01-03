@@ -5,6 +5,14 @@
   "audioDir": "C:\\audio",
   "historyDir": "C:\\history",
   "metaDataCsvFilePath": "C:\\metadata.csv",
+  "resultMovieCsvFilePath": "C:\\result-movies.csv",
   "exclusionListFilePath": "C:\\exclusion-list.txt",
-  "rangeCandidate": [ 2, 11, 99999 ]
+  "minDateTime": "2000-01-01T00:00:00+0900",
+  "rangeCandidate": [ 2, 11, 99999 ],
+  "movieSeconds": 6,
+  "fileCount": 6,
+  "noticeMailFromAddress": "example@mail.com",
+  "noticeMailAppPassword": "xxx",
+  "noticeMailSmtpClient": "smtp.com",
+  "noticeMailTag": "xxx"
 }
