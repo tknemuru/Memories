@@ -28,6 +28,11 @@ namespace Memories.Builders
         public DateTime EndDateTime { get; private set; }
 
         /// <summary>
+        /// アップロードしたファイルのURL
+        /// </summary>
+        public string FileUrl { get; private set; }
+
+        /// <summary>
         /// タグを設定します。
         /// </summary>
         /// <param name="tag">タグ</param>
@@ -61,6 +66,17 @@ namespace Memories.Builders
         }
 
         /// <summary>
+        /// アップロードしたファイルのURLを設定します。
+        /// </summary>
+        /// <param name="fileUrl">アップロードしたファイルのURL</param>
+        /// <returns>ビルダー</returns>
+        public NoticeMailBodyBuilder SetFileUrl(string fileUrl)
+        {
+            FileUrl = fileUrl;
+            return this;
+        }
+
+        /// <summary>
         /// 通知メールの本文を組み立てます。
         /// </summary>
         /// <returns>通知メールの本文</returns>
@@ -70,6 +86,8 @@ namespace Memories.Builders
             builder.AppendLine($"{Tag}動画のお届けです！");
             builder.AppendLine($"今回は、{StartDateTime.ToString("yyyy年M月")}～{EndDateTime.ToString("yyyy年M月")} の動画をピックアップして作成しました。");
             builder.AppendLine($"お楽しみください！");
+            builder.AppendLine(string.Empty);
+            builder.AppendLine($"{FileUrl}");
             return builder.ToString();
         }
     }

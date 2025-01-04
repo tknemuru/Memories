@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -56,6 +57,21 @@ namespace Memories.Models
         {
             Attachments.Add(new Attachment(filePath));
             OriginalFilePaths.Add(filePath);
+        }
+
+        /// <summary>
+        /// インスタンス状態を示す文字列を返却します。
+        /// </summary>
+        /// <returns>インスタンス状態を示す文字列</returns>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"送信元アドレス: {FromAddress}");
+            sb.AppendLine($"送信先アドレス: {ToAddress}");
+            sb.AppendLine($"件名: {Body}");
+            sb.AppendLine($"メール本文: {FromAddress}");
+            sb.AppendLine($"添付ファイルの添付前のオリジナルパス: {string.Join("|", OriginalFilePaths)}");
+            return sb.ToString();
         }
     }
 }

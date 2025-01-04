@@ -5,7 +5,9 @@
 
 #Custom
 app-config.json
+abel-gdrive-credential.json
 /Resources/
+Memories/Properties/launchSettings.json
 
 # User-specific files
 *.rsuser
