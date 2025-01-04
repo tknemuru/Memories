@@ -45,7 +45,8 @@ public class Program
                     {
                         throw new ArgumentException("通知メール送信は必ず第二引数に送信先アドレスを指定してください。");
                     }
-                    new MailSender().Send(args[1]);
+                    var fileUploader = new FileUploader();
+                    new MailSender(fileUploader).Send(args[1]);
                     break;
             }
         } catch (Exception ex)

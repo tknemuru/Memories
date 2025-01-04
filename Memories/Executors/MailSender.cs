@@ -19,6 +19,20 @@ namespace Memories.Executors
     public class MailSender
     {
         /// <summary>
+        /// ファイルアップロード機能
+        /// </summary>
+        private FileUploader FileUploader { get; set; }
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="fileUploader">ファイルアップロード機能</param>
+        public MailSender(FileUploader fileUploader)
+        {
+            FileUploader = fileUploader;
+        }
+
+        /// <summary>
         /// メールを送信します。
         /// </summary>
         /// <param name="toAddress">送信先アドレス</param>
@@ -31,6 +45,9 @@ namespace Memories.Executors
                 FileHelper.Log("送信するファイルがなかったため、処理を終了します。");
                 return;
             }
+
+            // ファイルをGoogleドライブにアップする
+            var fileUrl = FileUploader.Upload(file);
 
             // 件名・本文を組み立てる
             var fileNameStrs = Path.GetFileNameWithoutExtension(file).Split('-');
@@ -46,6 +63,7 @@ namespace Memories.Executors
                 .SetTag(tag)
                 .SetStartDateTime(DateTime.ParseExact(start, "yyyyMM", null))
                 .SetEndDateTime(DateTime.ParseExact(end, "yyyyMM", null))
+                .SetFileUrl(fileUrl)
                 .Build();
 
             // パラメータを作成する
@@ -82,15 +100,16 @@ namespace Memories.Executors
             var mailMessage = new MailMessage(param.FromAddress, param.ToAddress, param.Subject, param.Body);
 
             // 添付ファイルを追加
-            foreach (var attachment in param.Attachments)
-            {
-                mailMessage.Attachments.Add(attachment);
-            }
+            //foreach (var attachment in param.Attachments)
+            //{
+            //    mailMessage.Attachments.Add(attachment);
+            //}
 
             // メール送信
             try
             {
                 FileHelper.Log("メール送信開始");
+                FileHelper.Log(param.ToString());
                 smtpClient.Send(mailMessage);
                 FileHelper.Log("メール送信完了");
                 

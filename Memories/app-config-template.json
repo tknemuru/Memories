@@ -14,5 +14,11 @@
   "noticeMailFromAddress": "example@mail.com",
   "noticeMailAppPassword": "xxx",
   "noticeMailSmtpClient": "smtp.com",
-  "noticeMailTag": "xxx"
+  "noticeMailTag": "xxx",
+  "fileUploadCredentials": "C:\\history\\credentials.json",
+  "fileUploadUser": "example@mail.com",
+  "fileUploadFolderId": "xxx",
+  "fileUploadPermissionMailAdresses": [
+    "example@mail.com"
+  ]
 }
