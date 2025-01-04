@@ -1,5 +1,7 @@
 ﻿{
-  "movieFileDir": "C:\\movie",
+  "movieFileDirs": [
+    "C:\\movie"
+  ],
   "tempDir": "C:\\temp",
   "outputDir": "C:\\output",
   "audioDir": "C:\\audio",
