@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Memories.Executors
 {
-#pragma warning disable CS8604
+#pragma warning disable CS8604, CS8602
     /// <summary>
     /// 動画作成機能を提供します。
     /// </summary>
@@ -31,11 +31,18 @@ namespace Memories.Executors
             var hasReadMetadatas = CsvHelperWrapper.ReadRecords<MovieFileMetadata>(hasReadMetadataFilePath);
 
             // 取得済のメタデータは取得を省く
-            var targetDir = AppConfig.Get().GetValue<string>("movieFileDir");
-            string[] files = Directory.GetFiles(targetDir, "*.MOV", SearchOption.AllDirectories);
+            var targetDirs = AppConfig.Get().GetSection("movieFileDirs").Get<List<string>>();
+            var allFiles = new List<string>();
+            foreach (var targetDir in targetDirs)
+            {
+                var files = Directory.GetFiles(targetDir, "*.*", SearchOption.AllDirectories)
+                    .Where(file => file.EndsWith(".MOV", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                allFiles = allFiles.Union(files).ToList();
+            }
             var hasReadFileDic = hasReadMetadatas
                 .ToDictionary(m => m.FileName, m => m);
-            var targetFiles = files
+            var targetFiles = allFiles
                 .Where(f => !hasReadFileDic.ContainsKey(f));
 
             // ローカルの動画ファイルリストを取得
@@ -113,6 +120,7 @@ namespace Memories.Executors
                         .SetInputFilePath(metadata.FileName)
                         .SetOutputFilePath($"{tempDir}\\{timestamp}-{name}.MOV")
                         .SeTrimSeconds(metadata.TrimSeconds)
+                        .SetStartSeconds(metadata.StartSeconds)
                         .Build();
                     ffmpegExecutor.Execute(trimArgs);
                 }
