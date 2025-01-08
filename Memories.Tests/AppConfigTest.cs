@@ -9,8 +9,8 @@ namespace Memories.Tests
         public void İ’èî•ñ‚ª³í‚É“Ç‚İ‚ß‚é()
         {
             AppConfig.Init("app-config-template.json");
-            var actual = AppConfig.Get().GetSection("movieFileDir").Get<string>();
-            Assert.AreEqual(@"C:\movie", actual);
+            var actual = AppConfig.Get().GetSection("tempDir").Get<string>();
+            Assert.AreEqual(@"C:\temp", actual);
         }
     }
 }

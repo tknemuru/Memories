@@ -104,11 +104,14 @@ namespace Memories.Executors
                 perRequest.Execute();
             }
 
+            // アップロードしたURLを組み立てる
+            var url = $"https://drive.google.com/file/d/{fileId}/view?usp=sharing";
+
             // アップロード完了の確認
-            FileHelper.Log($"ファイルアップロード完了 {param.FilePath}");
+            FileHelper.Log($"ファイルアップロード完了 アップロード元のファイルパス：{param.FilePath} アップロードしたURL：{url}");
 
             // アップロードしたファイルのURLを返却する
-            return $"https://drive.google.com/file/d/{fileId}/view?usp=sharing";
+            return url;
         }
     }
 }

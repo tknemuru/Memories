@@ -39,15 +39,23 @@ namespace Memories.Executors
         public void Send(string toAddress)
         {
             // 送信するファイルを決める
-            var file = ExtractSendFile(toAddress);
+            var fileMetadata = ExtractSendFile(toAddress);
+            var file = fileMetadata.FileName;
             if (string.IsNullOrEmpty(file))
             {
                 FileHelper.Log("送信するファイルがなかったため、処理を終了します。");
                 return;
             }
 
-            // ファイルをGoogleドライブにアップする
-            var fileUrl = FileUploader.Upload(file);
+            // 未アップの場合は、ファイルをGoogleドライブにアップする
+            var fileUrl = fileMetadata.SharedStorageFileUrl;
+            if (string.IsNullOrEmpty(fileUrl))
+            {
+                fileUrl = FileUploader.Upload(file);
+            } else
+            {
+                FileHelper.Log($"Googleドライブにアップロード済のため、URLを流用します。 {fileUrl}");
+            }
 
             // 件名・本文を組み立てる
             var fileNameStrs = Path.GetFileNameWithoutExtension(file).Split('-');
@@ -74,8 +82,9 @@ namespace Memories.Executors
                 Subject = subject,
                 Body = body,
                 AppPassword = AppConfig.Get().GetValue<string>("noticeMailAppPassword"),
+                FileName = file,
+                SharedStorageFileUrl = fileUrl
             };
-            param.AddAttachment(file);
 
             // 送信実行
             Send(param);
@@ -112,12 +121,9 @@ namespace Memories.Executors
                 FileHelper.Log(param.ToString());
                 smtpClient.Send(mailMessage);
                 FileHelper.Log("メール送信完了");
-                
+
                 // 送信済に更新する
-                foreach (var filePath in param.OriginalFilePaths)
-                {
-                    UpdateSendFile(filePath, param.ToAddress);
-                }
+                UpdateSendFile(param);
             }
             catch (Exception ex)
             {
@@ -131,7 +137,7 @@ namespace Memories.Executors
         /// </summary>
         /// <param name="toAddress">送信先アドレス</param>
         /// <returns>送信対象のファイルパス</returns>
-        private string ExtractSendFile(string toAddress)
+        private MovieFileMetadata ExtractSendFile(string toAddress)
         {
             var path = AppConfig.Get().GetValue<string>("resultMovieCsvFilePath");
 
@@ -143,19 +149,18 @@ namespace Memories.Executors
 
             if (notSentFiles.Count == 0)
             {
-                return string.Empty;
+                return new MovieFileMetadata();
             }
 
             // 未送信ファイルの内、最も古いファイルを送信する
-            return notSentFiles.First().FileName;
+            return notSentFiles.First();
         }
 
         /// <summary>
         /// 送信済に更新します。
         /// </summary>
-        /// <param name="filePath">更新対象のファイルパス</param>
-        /// <param name="toAddress">送信先アドレス</param>
-        private void UpdateSendFile(string filePath, string toAddress)
+        /// <param name="param">送信パラメータ</param>
+        private void UpdateSendFile(MailSendParameter param)
         {
             var path = AppConfig.Get().GetValue<string>("resultMovieCsvFilePath");
 
@@ -163,13 +168,15 @@ namespace Memories.Executors
             var updRecords = records
                 .Select(r =>
                 {
-                    if (r.FileName != filePath)
+                    if (r.FileName != param.FileName)
                     {
                         return r;
                     }
 
                     // 送信済に更新する
-                    r.HasSentAddresses.Add(toAddress);
+                    r.HasSentAddresses.Add(param.ToAddress);
+                    // アップしたURLを再利用するために記録しておく
+                    r.SharedStorageFileUrl = param.SharedStorageFileUrl;
                     return r;
                 });
 

@@ -40,24 +40,14 @@ namespace Memories.Models
         public string AppPassword { get; set; }
 
         /// <summary>
-        /// 添付ファイル
+        /// ファイル名
         /// </summary>
-        public List<Attachment> Attachments { get; private set; } = new List<Attachment>();
+        public string FileName { get; set; }
 
         /// <summary>
-        /// 添付ファイルの添付前のオリジナルパス
+        /// 共有ストレージ上にアップしたファイルのURL
         /// </summary>
-        public List<string> OriginalFilePaths { get; private set; } = new List<string>();
-
-        /// <summary>
-        /// 添付ファイルを追加します。
-        /// </summary>
-        /// <param name="filePath">ファイルパス</param>
-        public void AddAttachment(string filePath)
-        {
-            Attachments.Add(new Attachment(filePath));
-            OriginalFilePaths.Add(filePath);
-        }
+        public string SharedStorageFileUrl { get; set; }
 
         /// <summary>
         /// インスタンス状態を示す文字列を返却します。
@@ -68,9 +58,10 @@ namespace Memories.Models
             var sb = new StringBuilder();
             sb.AppendLine($"送信元アドレス: {FromAddress}");
             sb.AppendLine($"送信先アドレス: {ToAddress}");
-            sb.AppendLine($"件名: {Body}");
-            sb.AppendLine($"メール本文: {FromAddress}");
-            sb.AppendLine($"添付ファイルの添付前のオリジナルパス: {string.Join("|", OriginalFilePaths)}");
+            sb.AppendLine($"件名: {Subject}");
+            sb.AppendLine($"メール本文: {Body}");
+            sb.AppendLine($"ファイル名: {FileName}");
+            sb.AppendLine($"共有ストレージ上にアップしたファイルのURL: {SharedStorageFileUrl}");
             return sb.ToString();
         }
     }

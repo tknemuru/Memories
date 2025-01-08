@@ -44,5 +44,10 @@ namespace Memories.Models
         /// </summary>
         [TypeConverter(typeof(StringEnumerableConverter))]
         public List<string> HasSentAddresses {  get; set; } = new List<string>();
+
+        /// <summary>
+        /// 共有ストレージ上にアップしたファイルのURL
+        /// </summary>
+        public string SharedStorageFileUrl { get; set; }
     }
 }
