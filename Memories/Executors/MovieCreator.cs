@@ -36,7 +36,8 @@ namespace Memories.Executors
             foreach (var targetDir in targetDirs)
             {
                 var files = Directory.GetFiles(targetDir, "*.*", SearchOption.AllDirectories)
-                    .Where(file => file.EndsWith(".MOV", StringComparison.OrdinalIgnoreCase))
+                    .Where(file => file.EndsWith(".MOV", StringComparison.OrdinalIgnoreCase)
+                        || file.EndsWith(".MP4", StringComparison.OrdinalIgnoreCase))
                     .ToList();
                 allFiles = allFiles.Union(files).ToList();
             }
