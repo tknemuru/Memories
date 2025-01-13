@@ -72,11 +72,25 @@ namespace Memories.Extractors
                 }
 
                 DateTime creationDatetime = new DateTime(1000, 1, 1);
-                if (jsonObj["format"] != null && jsonObj["format"]["tags"] != null && jsonObj["format"]["tags"]["com.apple.quicktime.creationdate"] != null)
+                var hasFoundDatetime = false;
+                if (jsonObj["format"] != null && jsonObj["format"]["tags"] != null)
                 {
-                    creationDatetime = DateTime.Parse(jsonObj["format"]["tags"]["com.apple.quicktime.creationdate"].ToString());
+                    if (jsonObj["format"]["tags"]["com.apple.quicktime.creationdate"] != null)
+                    {
+                        creationDatetime = DateTime.Parse(jsonObj["format"]["tags"]["com.apple.quicktime.creationdate"].ToString());
+                        FileHelper.Log($"com.apple.quicktime.creationdateから撮影日を特定 {creationDatetime}");
+                        hasFoundDatetime = true;
+                    }
+
+                    if (!hasFoundDatetime && jsonObj["format"]["tags"]["creation_time"] != null)
+                    {
+                        creationDatetime = DateTime.Parse(jsonObj["format"]["tags"]["creation_time"].ToString());
+                        FileHelper.Log($"creation_timeから撮影日を特定 {creationDatetime}");
+                        hasFoundDatetime = true;
+                    }
                 }
-                else
+
+                if (!hasFoundDatetime)
                 {
                     FileHelper.Log($"creationDatetimeが取得できませんでした。 {f}");
                 }
