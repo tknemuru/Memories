@@ -22,16 +22,17 @@ namespace Memories.Executors
     public class MovieCreator
     {
         /// <summary>
-        /// フィルタ機能のリスト
+        /// 動画作成パラメータ
         /// </summary>
-        public List<IMovieFileFiltable> MovieFileFilters { get; set; }
+        public MovieCreatorParameter Parameter { get; set; }
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         public MovieCreator()
         {
-            MovieFileFilters = new List<IMovieFileFiltable>();
+            Parameter = new MovieCreatorParameter();
+            var filters = new List<IMovieFileFiltable>();
 
             // 除外リストを読み込む
             var exclusionListFilePath = AppConfig.Get().GetValue<string>("exclusionListFilePath");
@@ -49,10 +50,11 @@ namespace Memories.Executors
             var secondsSettingsFilter = new TrimSecondsSettingsFilter(movieSeconds);
             var exclusionFilter = new ExclusionFilter(exclusions);
 
-            MovieFileFilters.Add(datetimeFilter);
-            MovieFileFilters.Add(fileCountFilter);
-            MovieFileFilters.Add(secondsSettingsFilter);
-            MovieFileFilters.Add(exclusionFilter);
+            filters.Add(datetimeFilter);
+            filters.Add(fileCountFilter);
+            filters.Add(secondsSettingsFilter);
+            filters.Add(exclusionFilter);
+            Parameter.MovieFileFilters = filters;
         }
 
 
@@ -63,9 +65,9 @@ namespace Memories.Executors
         /// <param name="startMonth">開始月（yyyy-MM）</param>
         /// <param name="fileCount">ファイル数</param>
         /// <param name="movieSeconds">動画秒数</param>
-        public void CreateLongSpanMovie(int[] rangeCandidate, string startMonth, int fileCount, int movieSeconds)
+        public void CreateLongSpanMovie(MovieCreatorParameter param)
         {
-            MovieFileFilters = new List<IMovieFileFiltable>();
+            var filters = new List<IMovieFileFiltable>();
 
             // 除外リストを読み込む
             var exclusionListFilePath = AppConfig.Get().GetValue<string>("exclusionListFilePath");
@@ -75,15 +77,18 @@ namespace Memories.Executors
                 exclusions = FileHelper.ReadTextLines(exclusionListFilePath);
             }
 
-            var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, startMonth);
-            var dateTimeEvenlyFilter = new DateTimeEvenlyFilter(fileCount);
-            var secondsSettingsFilter = new TrimSecondsSettingsFilter(movieSeconds);
+            var datetimeFilter = new CreationDateTimeRangeFilter(param.RangeCandidate, param.StartMonth);
+            var dateTimeEvenlyFilter = new DateTimeEvenlyFilter(param.FileCount);
+            var secondsSettingsFilter = new TrimSecondsSettingsFilter(param.MovieSeconds);
             var exclusionFilter = new ExclusionFilter(exclusions);
 
-            MovieFileFilters.Add(datetimeFilter);
-            MovieFileFilters.Add(dateTimeEvenlyFilter);
-            MovieFileFilters.Add(secondsSettingsFilter);
-            MovieFileFilters.Add(exclusionFilter);
+            filters.Add(datetimeFilter);
+            filters.Add(dateTimeEvenlyFilter);
+            filters.Add(secondsSettingsFilter);
+            filters.Add(exclusionFilter);
+            param.MovieFileFilters = filters;
+
+            Parameter = param;
 
             Create();
         }
@@ -133,7 +138,7 @@ namespace Memories.Executors
                 .ToList();
 
             // 対象を絞り込む
-            foreach (var filter in MovieFileFilters)
+            foreach (var filter in Parameter.MovieFileFilters)
             {
                 metadatas = filter
                     .Filter(metadatas)
@@ -203,9 +208,16 @@ namespace Memories.Executors
                 ffmpegExecutor.Execute(concatArgs);
 
                 // BGMを決める
-                var audioDir = AppConfig.Get().GetValue<string>("audioDir");
-                var audioExtractor = new LocalAudioFileExtractor(audioDir);
-                var audioFilePath = audioExtractor.Extract();
+                var audioFilePath = string.Empty;
+                if (string.IsNullOrEmpty(Parameter.AudioFilePath))
+                {
+                    var audioDir = AppConfig.Get().GetValue<string>("audioDir");
+                    var audioExtractor = new LocalAudioFileExtractor(audioDir);
+                    audioFilePath = audioExtractor.Extract();
+                } else
+                {
+                    audioFilePath = Parameter.AudioFilePath;
+                }
 
                 // BGMをマージする
                 var audioMergedFilePath = $"{tempDir}\\{minMaxTimestamp}-without-fadeout.MOV";

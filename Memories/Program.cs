@@ -49,17 +49,14 @@ public class Program
                     new MailSender(fileUploader).Send(args[1]);
                     break;
                 case ExeMode.CreateLongSpanMovie:
-                    var rangeCandidate = int.Parse(args[1]);
-                    var startMonth = args[2];
-                    var fileCount = int.Parse(args[3]);
-                    var movieSeconds = int.Parse(args[4]);
+                    var param = new MovieCreatorParameter();
+                    param.RangeCandidate = [int.Parse(args[1])];
+                    param.StartMonth = args[2];
+                    param.FileCount = int.Parse(args[3]);
+                    param.MovieSeconds = int.Parse(args[4]);
+                    param.AudioFilePath = args[5];
                     FileHelper.Log("長期間指定の動画作成開始");
-                    creator.CreateLongSpanMovie(
-                        [ rangeCandidate ],
-                        startMonth,
-                        fileCount,
-                        movieSeconds
-                        );
+                    creator.CreateLongSpanMovie(param);
                     FileHelper.Log($"長期間指定の動画作成完了");
                     break;
             }

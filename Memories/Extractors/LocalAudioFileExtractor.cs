@@ -32,7 +32,7 @@ namespace Memories.Extractors
         /// <returns>音声ファイルパス</returns>
         public string Extract()
         {
-            string[] files = Directory.GetFiles(TargetDir, "*.mp3", SearchOption.AllDirectories);
+            string[] files = Directory.GetFiles(TargetDir, "*.mp3", SearchOption.TopDirectoryOnly);
             var random = new Random();
             var index = random.Next(files.Length);
             FileHelper.Log($"音声ファイルを決定。 {files[index]}");
