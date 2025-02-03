@@ -5,7 +5,7 @@ using Memories.Models;
 
 public class Program
 {
-#pragma warning disable CS8604
+#pragma warning disable CS8604, CS8602
     static void Main(string[] args)
     {
         try
@@ -20,6 +20,7 @@ public class Program
                 mode = (ExeMode)int.Parse(args[0]);
             }
 
+            var creator = new MovieCreator();
             switch (mode)
             {
                 case ExeMode.CreateMovie:
@@ -32,7 +33,6 @@ public class Program
                     }
 
                     FileHelper.Log($"動画作成件数：{count}件");
-                    var creator = new MovieCreator();
                     for (var i = 0; i < count; i++)
                     {
                         FileHelper.Log($"{i + 1}件目の動画作成開始");
@@ -47,6 +47,17 @@ public class Program
                     }
                     var fileUploader = new FileUploader();
                     new MailSender(fileUploader).Send(args[1]);
+                    break;
+                case ExeMode.CreateLongSpanMovie:
+                    var param = new MovieCreatorParameter();
+                    param.RangeCandidate = [int.Parse(args[1])];
+                    param.StartMonth = args[2];
+                    param.FileCount = int.Parse(args[3]);
+                    param.MovieSeconds = int.Parse(args[4]);
+                    param.AudioFilePath = args[5];
+                    FileHelper.Log("長期間指定の動画作成開始");
+                    creator.CreateLongSpanMovie(param);
+                    FileHelper.Log($"長期間指定の動画作成完了");
                     break;
             }
         } catch (Exception ex)

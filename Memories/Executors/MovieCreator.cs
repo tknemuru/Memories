@@ -22,6 +22,78 @@ namespace Memories.Executors
     public class MovieCreator
     {
         /// <summary>
+        /// 動画作成パラメータ
+        /// </summary>
+        public MovieCreatorParameter Parameter { get; set; }
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        public MovieCreator()
+        {
+            Parameter = new MovieCreatorParameter();
+            var filters = new List<IMovieFileFiltable>();
+
+            // 除外リストを読み込む
+            var exclusionListFilePath = AppConfig.Get().GetValue<string>("exclusionListFilePath");
+            IEnumerable<string> exclusions = new List<string>();
+            if (File.Exists(exclusionListFilePath))
+            {
+                exclusions = FileHelper.ReadTextLines(exclusionListFilePath);
+            }
+
+            var rangeCandidate = AppConfig.Get().GetSection("rangeCandidate").Get<int[]>();
+            var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, string.Empty);
+            var fileCount = AppConfig.Get().GetValue<int>("fileCount");
+            var fileCountFilter = new FileCountFilter(fileCount);
+            var movieSeconds = AppConfig.Get().GetValue<int>("movieSeconds");
+            var secondsSettingsFilter = new TrimSecondsSettingsFilter(movieSeconds);
+            var exclusionFilter = new ExclusionFilter(exclusions);
+
+            filters.Add(datetimeFilter);
+            filters.Add(fileCountFilter);
+            filters.Add(secondsSettingsFilter);
+            filters.Add(exclusionFilter);
+            Parameter.MovieFileFilters = filters;
+        }
+
+
+        /// <summary>
+        /// 長期間指定の動画を作成します。
+        /// </summary>
+        /// <param name="rangeCandidate">期間（月）の候補リスト</param>
+        /// <param name="startMonth">開始月（yyyy-MM）</param>
+        /// <param name="fileCount">ファイル数</param>
+        /// <param name="movieSeconds">動画秒数</param>
+        public void CreateLongSpanMovie(MovieCreatorParameter param)
+        {
+            var filters = new List<IMovieFileFiltable>();
+
+            // 除外リストを読み込む
+            var exclusionListFilePath = AppConfig.Get().GetValue<string>("exclusionListFilePath");
+            IEnumerable<string> exclusions = new List<string>();
+            if (File.Exists(exclusionListFilePath))
+            {
+                exclusions = FileHelper.ReadTextLines(exclusionListFilePath);
+            }
+
+            var datetimeFilter = new CreationDateTimeRangeFilter(param.RangeCandidate, param.StartMonth);
+            var dateTimeEvenlyFilter = new DateTimeEvenlyFilter(param.FileCount);
+            var secondsSettingsFilter = new TrimSecondsSettingsFilter(param.MovieSeconds);
+            var exclusionFilter = new ExclusionFilter(exclusions);
+
+            filters.Add(datetimeFilter);
+            filters.Add(dateTimeEvenlyFilter);
+            filters.Add(secondsSettingsFilter);
+            filters.Add(exclusionFilter);
+            param.MovieFileFilters = filters;
+
+            Parameter = param;
+
+            Create();
+        }
+
+        /// <summary>
         /// 動画を作成します。
         /// </summary>
         public void Create()
@@ -65,27 +137,14 @@ namespace Memories.Executors
                 .Where(m => m.CreationDateTime > filterMinDateTime)
                 .ToList();
 
-            // 除外リストを読み込む
-            var exclusionListFilePath = AppConfig.Get().GetValue<string>("exclusionListFilePath");
-            IEnumerable<string> exclusions = new List<string>();
-            if (File.Exists(exclusionListFilePath))
-            {
-                exclusions = FileHelper.ReadTextLines(exclusionListFilePath);
-            }
-
             // 対象を絞り込む
-            var rangeCandidate = AppConfig.Get().GetSection("rangeCandidate").Get<int[]>();
-            var datetimeFilter = new CreationDateTimeRangeFilter(rangeCandidate, string.Empty);
-            var fileCount = AppConfig.Get().GetValue<int>("fileCount");
-            var fileCountFilter = new FileCountFilter(fileCount);
-            var movieSeconds = AppConfig.Get().GetValue<int>("movieSeconds");
-            var secondsSettingsFilter = new TrimSecondsSettingsFilter(movieSeconds);
-            var exclusionFilter = new ExclusionFilter(exclusions);
-            metadatas = datetimeFilter.Filter(metadatas).ToList();
-            metadatas = exclusionFilter.Filter(metadatas).ToList();
-            metadatas = fileCountFilter.Filter(metadatas).ToList();
-            metadatas = secondsSettingsFilter
-                .Filter(metadatas)
+            foreach (var filter in Parameter.MovieFileFilters)
+            {
+                metadatas = filter
+                    .Filter(metadatas)
+                    .ToList();
+            }
+            metadatas = metadatas
                 .OrderBy(m => m.CreationDateTime)
                 .ToList();
 
@@ -149,9 +208,16 @@ namespace Memories.Executors
                 ffmpegExecutor.Execute(concatArgs);
 
                 // BGMを決める
-                var audioDir = AppConfig.Get().GetValue<string>("audioDir");
-                var audioExtractor = new LocalAudioFileExtractor(audioDir);
-                var audioFilePath = audioExtractor.Extract();
+                var audioFilePath = string.Empty;
+                if (string.IsNullOrEmpty(Parameter.AudioFilePath))
+                {
+                    var audioDir = AppConfig.Get().GetValue<string>("audioDir");
+                    var audioExtractor = new LocalAudioFileExtractor(audioDir);
+                    audioFilePath = audioExtractor.Extract();
+                } else
+                {
+                    audioFilePath = Parameter.AudioFilePath;
+                }
 
                 // BGMをマージする
                 var audioMergedFilePath = $"{tempDir}\\{minMaxTimestamp}-without-fadeout.MOV";

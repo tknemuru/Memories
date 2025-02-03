@@ -20,5 +20,10 @@ namespace Memories.Models
         /// 通知メール送信
         /// </summary>
         SendNoticeMail,
+
+        /// <summary>
+        /// 長期間指定の動画作成
+        /// </summary>
+        CreateLongSpanMovie,
     }
 }

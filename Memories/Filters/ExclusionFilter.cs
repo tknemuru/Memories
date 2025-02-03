@@ -25,6 +25,7 @@ namespace Memories.Filters
         public ExclusionFilter(IEnumerable<string> exclusions)
         {
             Exclusions = exclusions
+                .Distinct()
                 .ToDictionary(ex => ex, ex => ex);
         }
 
